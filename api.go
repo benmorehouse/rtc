@@ -7,7 +7,7 @@ import(
 
 const ApiKey string = "B63dwvvoZp5Kh47nTVcvRg3Mf1SbkBvCkrAkFbSA" // eventually will be gotten by
 
-func GenerateRequest()(string){
+func GenerateRequest(ApiKey string)(string){
 	date := time.Now()
 	today := strings.Fields(date.String())[0]
 	var apiCall string

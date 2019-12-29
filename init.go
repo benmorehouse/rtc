@@ -13,7 +13,7 @@ var InitCmd = &cobra.Command{
 	Use:"init",
 	Short:"Initialize your Rescuetime CLI",
 	Run: func(cmd *cobra.Command, args []string){
-		color.Magenta.Println("Welcome to your very own Rescue Time CLI")
+		color.LightBlue.Println("Welcome to your very own Rescue Time CLI")
 		for{
 			fmt.Print("Have you created a rescuetime account yet? [Y/N]")
 			var input string
@@ -31,8 +31,8 @@ var InitCmd = &cobra.Command{
 				continue
 			}
 		}
-		fmt.Println("Next go to ")
-		color.Magenta.Print("https://www.rescuetime.com/apidoc")
+		fmt.Print("Next go to ")
+		color.LightBlue.Print("https://www.rescuetime.com/apidoc")
 		fmt.Println(" and create an API key. \nThis will act as your way of getting access to your account through this CLI.")
 		for{
 			fmt.Print("Have you created a rescuetime API Key yet? [Y/N]")
@@ -53,7 +53,7 @@ var InitCmd = &cobra.Command{
 		}
 
 		// now we have our APIKey
-		db, err := bolt.Open("mainDatabase.db", 0600, nil)
+		db, err := bolt.Open("RescueTimeDatabase.db", 0600, nil)
 		if err != nil{
 			return
 		}

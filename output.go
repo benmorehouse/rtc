@@ -31,7 +31,7 @@ func (this* results) OutputHelper(){
 		(float64(this.Unproductive)     / float64(this.TotalTimeSpent))*100,
 		(float64(this.VeryUnproductive) / float64(this.TotalTimeSpent))*100,
 	}
-
+	color.Cyan.Println("Time logged today:",this.TotalTimeSpent/3600," hours, ",this.TotalTimeSpent%60," minutes")
 	for i:=0;i<5;i++{
 		switch i{
 		case 0:
@@ -59,3 +59,4 @@ func (this* results) OutputHelper(){
 		fmt.Println("%")
 	}
 }
+

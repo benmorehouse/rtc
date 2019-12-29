@@ -10,12 +10,27 @@ you do on your computer on any given day. Go here if you dont have it downloaded
 	https://www.rescuetime.com/download
 
 After you have it downloaded and your settings created just how you like, you can use
-this CLI to interact with it.
+this CLI to interact with your daily spenditures of time.
 
 # Installation 
 
-Ensure you are running Python 2.7 on your machine in order to be able to run this project.
+Firstly, make a directory in where you are comfortable running this from. Then run
 
-Ensure you have mysql running on your computer as well.
+	git init
+	git pull https://github.com/benmorehouse/RTC.git
+
+Check to ensure you are running the latest version of Go. To do so, run 
+
+	go version
+
+Then, you need to grab the following three packages using the get command:
+
+	go get "github.com/boltdb/bolt"
+	go get "github.com/spf13/cobra"
+	go get "github.com/gookit/color"
+
+Finally, build the binary and run
+
+	./rtc init
 
 
