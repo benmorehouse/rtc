@@ -2,6 +2,7 @@ package main
 
 import(
 	"github.com/spf13/cobra"
+//	"github.com/boltdb/bolt"
 	"net/http"
 	"encoding/csv"
 	"strconv"
@@ -105,5 +106,4 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-// can keep data within boltdb and can use a nice CLI interface maybe with cobra? Doesnt have to use cobra though.
 

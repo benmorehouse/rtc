@@ -54,6 +54,8 @@ func (this* results) OutputHelper(){
 			}
 		}
 
-		fmt.Println("]",percentages[i],"%")
+		fmt.Print("]")
+		fmt.Printf("%9.2f",percentages[i])
+		fmt.Println("%")
 	}
 }
