@@ -34,3 +34,7 @@ Finally, build the binary and run
 	./rtc init
 
 
+***Note***
+
+You may have to run 'chmod 755 rtc' to give permission to run
+
