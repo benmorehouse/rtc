@@ -14,6 +14,8 @@ this CLI to interact with your daily spenditures of time.
 
 # Installation 
 
+If you just wish to use the project as a tool, [then run the binary!](https://github.com/benmorehouse/rtc/releases)
+
 Firstly, make a directory in where you are comfortable running this from. Then run
 
 	git init
