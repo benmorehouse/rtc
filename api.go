@@ -1,24 +1,32 @@
 package main
 
-import(
-	"time" // used to get current date for API call
+import (
+	"net/url"
 	"strings"
+	"time" // used to get current date for API call
 )
 
-const ApiKey string = "B63dwvvoZp5Kh47nTVcvRg3Mf1SbkBvCkrAkFbSA" // eventually will be gotten by
+const baseUrl string = "https://www.rescuetime.com/anapi/data"
 
-func GenerateRequest(ApiKey string)(string){
+func GenerateRequest(apiKey string) (string, error) {
 	date := time.Now()
 	today := strings.Fields(date.String())[0]
-	var apiCall string
-	apiCall += "https://www.rescuetime.com/anapi/data?key="
-	apiCall += ApiKey
-	apiCall += "&perspective=interval&restrict_kind=productivity&interval=hour&restrict_begin="
-	apiCall += today
-	apiCall += "&restrict_end="
-	apiCall += today
-	apiCall += "&format=csv"
-	return apiCall
+
+	u, err := url.Parse(baseUrl)
+	if err != nil {
+		return "", err
+	}
+
+	q := u.Query()
+	q.Set("key", apiKey)
+	q.Set("perspective", "interval")
+	q.Set("restrict_kind", "productivity")
+	q.Set("interval", "hour")
+	q.Set("restrict_begin", today)
+	q.Set("restrict_end", today)
+	q.Set("format", "csv")
+
+	u.RawQuery = q.Encode()
+
+	return u.String(), nil
 }
-
-
