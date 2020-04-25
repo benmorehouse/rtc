@@ -2,12 +2,10 @@ package main
 
 import (
 	"encoding/csv"
-	"errors"
-	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/boltdb/bolt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -45,90 +43,93 @@ var rootCmd = &cobra.Command{
 	DisableFlagParsing: true, // all flags passed as arguments
 	Short:              "Display rescuetime data",
 	Run: func(cmd *cobra.Command, args []string) { // args is gonna be what we pass through
+		conf, err := getCurrentConfiguration()
+		if err != nil {
+			InternalFatalError(ConfigFileInit)
+		}
+
+		setLogger(&conf.LogFile)
 		if len(args) == 0 || args[0] == "d" { // default is to just do the day
-			db, err := bolt.Open("RescueTimeDatabase.db", 0600, nil)
-			if err != nil {
-				log.Fatal("Database not found: run ./rtc init")
-			}
-			defer db.Close()
-
-			if err := db.View(func(tx *bolt.Tx) error {
-				bucket := tx.Bucket([]byte("apiAuth"))
-				if bucket == nil {
-					return errors.New("Database err: Bucket not found ---> suggestion: run ./rtc init")
-				}
-				c := bucket.Cursor() // breaks because we are not in a transaction
-				_, apiKey := c.Seek([]byte("apiAuth"))
-				if apiKey == nil {
-					return errors.New("Database err: APIKey not found ---> suggestion: run ./rtc init")
-				}
-				request, err := GenerateRequest(string(apiKey)) // generates our request for us
-				if err != nil {
-					return errors.New("Api err: unable to create proper api url ---> suggestion: file a github issue")
-				}
-
-				resp, err := http.Get(request)
-				if err != nil {
-					return errors.New("Database error ---> suggestion: run ./rtc init")
-				}
-
-				data, err := csv.NewReader(resp.Body).ReadAll()
-				if err != nil {
-					return err
-				}
-
-				bufferResults := results{
-					TotalTimeSpent:               0,
-					VeryUnproductive:             0,
-					Unproductive:                 0,
-					Nuetral:                      0,
-					Productive:                   0,
-					VeryProductive:               0,
-					NuetralThreshold:             10,
-					NuetralThresholdReached:      false,
-					UnproductiveThreshold:        10,
-					UnproductiveThresholdReached: false,
-				}
-
-				for _, day := range data[1:] {
-					timeSpentBuffer, _ := strconv.Atoi(day[1])
-					timeSpent := uint(timeSpentBuffer)
-					productivity, _ := strconv.Atoi(day[3])
-
-					bufferResults.TotalTimeSpent += uint(timeSpent)
-
-					switch productivity {
-					case -2:
-						bufferResults.VeryUnproductive += timeSpent
-					case -1:
-						bufferResults.Unproductive += timeSpent
-					case 0:
-						bufferResults.Nuetral += timeSpent
-					case 1:
-						bufferResults.Productive += timeSpent
-					case 2:
-						bufferResults.VeryProductive += timeSpent
-					}
-				}
-
-				if float64(bufferResults.Nuetral)/float64(bufferResults.TotalTimeSpent) > float64(bufferResults.NuetralThreshold) {
-					bufferResults.NuetralThresholdReached = true
-				}
-
-				if float64(bufferResults.Unproductive+bufferResults.VeryUnproductive)/float64(bufferResults.TotalTimeSpent) > float64(bufferResults.UnproductiveThreshold) {
-					bufferResults.NuetralThresholdReached = true
-				}
-				bufferResults.Output(Day)
-				return nil
-			}); err != nil {
-				log.Fatal(err)
-			}
+			getDaily(*conf)
 		} else if args[0] == "w" {
+			log.Trace("User has request this weeks information")
 			return
 			//bufferResults.Ouput(Week)
 		} else {
+			log.Trace("User has request this month's information")
 			return
 			//bufferResults.Ouput(Week)
 		}
+
 	},
+}
+
+// getDaily will generate the output based on just the day's work
+func getDaily(conf Config) {
+
+	log.Info(conf)
+	log.Trace("User has requested today's information")
+	request, err := GenerateRequest(conf.Key) // generates our request for us
+	if err != nil {
+		log.Error(err)
+		InternalFatalError(URLParseFailed)
+	}
+
+	log.Info(request)
+	resp, err := http.Get(request)
+	if err != nil {
+		log.Error(err)
+		InternalFatalError(GetRequestFailed)
+	}
+
+	data, err := csv.NewReader(resp.Body).ReadAll()
+	if err != nil {
+		log.Error(err)
+		InternalFatalError(CSVParseFailed)
+	}
+
+	bufferResults := results{
+		TotalTimeSpent:               0,
+		VeryUnproductive:             0,
+		Unproductive:                 0,
+		Nuetral:                      0,
+		Productive:                   0,
+		VeryProductive:               0,
+		NuetralThreshold:             10,
+		NuetralThresholdReached:      false,
+		UnproductiveThreshold:        10,
+		UnproductiveThresholdReached: false,
+	}
+
+	for _, day := range data[1:] {
+		timeSpentBuffer, _ := strconv.Atoi(day[1])
+		timeSpent := uint(timeSpentBuffer)
+		productivity, _ := strconv.Atoi(day[3])
+
+		bufferResults.TotalTimeSpent += uint(timeSpent)
+
+		switch productivity {
+		case -2:
+			bufferResults.VeryUnproductive += timeSpent
+		case -1:
+			bufferResults.Unproductive += timeSpent
+		case 0:
+			bufferResults.Nuetral += timeSpent
+		case 1:
+			bufferResults.Productive += timeSpent
+		case 2:
+			bufferResults.VeryProductive += timeSpent
+		}
+	}
+
+	if float64(bufferResults.Nuetral)/float64(bufferResults.TotalTimeSpent) > float64(bufferResults.NuetralThreshold) {
+		bufferResults.NuetralThresholdReached = true
+	}
+
+	if float64(bufferResults.Unproductive+bufferResults.VeryUnproductive)/float64(bufferResults.TotalTimeSpent) > float64(bufferResults.UnproductiveThreshold) {
+		bufferResults.NuetralThresholdReached = true
+	}
+
+	bufferResults.Output(Day)
+	log.Trace("Successfully return rtc data for the day thus far")
 }

@@ -6,9 +6,10 @@ import (
 	"time" // used to get current date for API call
 )
 
-const baseUrl string = "https://www.rescuetime.com/anapi/data"
-
+// GenerateRequest will return the url query for a day
 func GenerateRequest(apiKey string) (string, error) {
+
+	baseUrl := "https://www.rescuetime.com/anapi/daily_summary_feed"
 	date := time.Now()
 	today := strings.Fields(date.String())[0]
 

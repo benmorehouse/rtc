@@ -23,7 +23,10 @@ func (this *results) Output(input mode) {
 	}
 }
 
+// OutputHelper will take in output that is neccessary for the user, abstract the console printing,
+// and return the correctly formatted results using their respective colors.
 func (this *results) OutputHelper() {
+
 	percentages := [5]float64{
 		(float64(this.VeryProductive) / float64(this.TotalTimeSpent)) * 100,
 		(float64(this.Productive) / float64(this.TotalTimeSpent)) * 100,
@@ -45,8 +48,9 @@ func (this *results) OutputHelper() {
 		case 4:
 			color.Red.Print("Very Unproductive  ")
 		}
+
 		fmt.Print("[")
-		for j := 0.0; j < 50; j++ {
+		for j := float64(0); j < 50; j++ {
 			if j > percentages[i]/2 {
 				fmt.Print("-")
 			} else {
